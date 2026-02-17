@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Accueil - Gainmax</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: Arial; background:#f2f2f2; margin:0; padding-bottom:80px; }
+
+  header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:20px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  #solde {
+    font-size:42px; font-weight:bold; color:#28a745;
+  }
+
+  .actions {
+    display:flex; gap:10px;
+  }
+
+  .actions button {
+    padding:14px 22px; font-size:18px; cursor:pointer; border:none; border-radius:8px;
+    background:#28a745; color:white;
+  }
+
+  .actions button:hover { background:#218838; }
+
+  main {
+    text-align:center; padding:60px 20px; font-size:20px; line-height:1.6;
+  }
+
+  footer {
+    position:fixed; bottom:0; left:0; right:0; height:60px;
+    background:#28a745; display:flex; justify-content:space-around; align-items:center;
+    color:white; font-weight:bold;
+  }
+
+  footer a {
+    color:white; text-decoration:none; text-align:center; font-size:14px;
+  }
+
+  footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <div id="solde">1000 FCFA</div>
+  <div class="actions">
+    <button onclick="window.location.href='recharge.html'">Recharge</button>
+    <button onclick="window.location.href='retrait.html'">Retrait</button>
+    <button onclick="window.location.href='assistance.html'">Assistance</button>
+  </div>
+</header>
+
+<main>
+  <p>Gainmax est une plateforme dinvestissement creer le 18 fevrief 2026 et la plateforme va durer plus de un mois.
+    Commencez à investir sur Gainmax et gagner des revenus quotidiens dont vous pouvez retirer à tout moment .. </p>
+  <p>Gainmax ❤️ ensemble vers l'avenir 🚀✅</p>
+</main>
+
+<footer>
+  <a href="accueil.html">🏠<br>Accueil</a>
+  <a href="produit.html">📦<br>Produit</a>
+  <a href="equipe.html">👥<br>Équipe</a>
+  <a href="moi.html">👤<br>Moi</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // --- Connexion Supabase ---
+  const supabaseUrl = 'https://bokfeyyczhzreolydjly.supabase.co';
+  const supabaseKey = 'sb_publishable_5DXFVEW-wWVm-sMaLjrSCg_9U4OR4dW';
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  const userId = 1; // ID utilisateur connecté (à remplacer dynamiquement)
+  const soldeDiv = document.getElementById("solde");
+
+  // --- Récupérer le solde utilisateur ---
+  async function getSolde() {
+    const { data, error } = await supabase
+      .from('users')
+      .select('solde')
+      .eq('id', userId)
+      .single();
+
+    if (error || !data) {
+      // Nouvel utilisateur → solde initial 1000 FCFA
+      await supabase.from('users').insert([{ id: userId, solde: 1000 }]);
+      soldeDiv.innerText = "1 000 FCFA";
+      return;
+    }
+
+    soldeDiv.innerText = Number(data.solde).toLocaleString('fr-FR') + " FCFA";
+  }
+
+  getSolde();
+</script>
+
+</body>
+</html>

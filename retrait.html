@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Retrait - Gainmax</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  font-family: Arial;
+  background:#f2f2f2;
+  margin:0;
+  padding-bottom:80px; /* espace pour menu */
+}
+.container {
+  max-width:400px;
+  margin:40px auto;
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+}
+h2 { text-align:center; }
+label { display:block; margin-top:15px; font-weight:bold; }
+input, select { width:100%; padding:10px; margin-top:5px; }
+button { width:100%; margin-top:20px; padding:12px; background:#28a745; color:white; border:none; font-size:16px; cursor:pointer; border-radius:8px; }
+button:hover { background:#218838; }
+.message { margin-top:15px; text-align:center; font-weight:bold; color:green; }
+.error { color:red; text-align:center; margin-top:15px; font-weight:bold; }
+
+/* Bouton retour */
+.btn-retour {
+  background: #6c757d;
+  margin-top: 10px;
+}
+.btn-retour:hover {
+  background: #5a6268;
+}
+
+/* Menu horizontal fixe en bas */
+footer {
+  position:fixed;
+  bottom:0;
+  left:0; right:0;
+  height:60px;
+  background:#28a745;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  color:white;
+  font-weight:bold;
+}
+footer a {
+  color:white;
+  text-decoration:none;
+  text-align:center;
+  font-size:14px;
+}
+footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Retrait</h2>
+
+  <label>Pays</label>
+  <select id="pays">
+    <option value="">-- Sélectionner --</option>
+    <option value="+226">Burkina Faso</option>
+    <option value="+225">Côte d’Ivoire</option>
+    <option value="+221">Sénégal</option>
+    <option value="+223">Mali</option>
+    <option value="+237">Cameroun</option>
+  </select>
+
+  <label>Code pays</label>
+  <input type="text" id="codePays" readonly>
+
+  <label>Numéro Orange Money</label>
+  <input type="tel" id="numero" placeholder="Ex: 70123456">
+
+  <label>Nom complet</label>
+  <input type="text" id="nom" placeholder="Ex: Jean Dupont">
+
+  <label>Montant</label>
+  <input type="number" id="montant" placeholder="Ex: 5000">
+
+  <!-- BOUTON RETOUR -->
+  <button class="btn-retour" onclick="window.location.href='accueil.html'">← Retour</button>
+
+  <!-- BOUTON VALIDER -->
+  <button id="btnValider">Valider le retrait</button>
+
+  <div class="message" id="message"></div>
+</div>
+
+<footer>
+  <a href="accueil.html">🏠<br>Accueil</a>
+  <a href="produit.html">📦<br>Produit</a>
+  <a href="equipe.html">👥<br>Équipe</a>
+  <a href="moi.html">👤<br>Moi</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// --- Initialisation Supabase ---
+const supabaseUrl = 'https://bokfeyyczhzreolydjly.supabase.co';
+const supabaseKey = 'sb_publishable_5DXFVEW-wWVm-sMaLjrSCg_9U4OR4dW';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+const pays = document.getElementById("pays");
+const codePays = document.getElementById("codePays");
+const numero = document.getElementById("numero");
+const nom = document.getElementById("nom");
+const montant = document.getElementById("montant");
+const btn = document.getElementById("btnValider");
+const message = document.getElementById("message");
+
+// --- Mettre à jour le code pays automatiquement ---
+pays.addEventListener("change", () => {
+  codePays.value = pays.value;
+});
+
+// --- Validation et envoi ---
+btn.addEventListener("click", async () => {
+  if (!pays.value || !numero.value || !nom.value || !montant.value) {
+    message.innerText = "Veuillez remplir tous les champs";
+    message.className = "error";
+    return;
+  }
+
+  // Envoi à Supabase
+  const { data, error } = await supabase
+    .from('retrait')
+    .insert([{
+      user_id: 1, // Remplacer par l'ID réel de l'utilisateur connecté
+      pays: pays.value,
+      codePays: codePays.value,
+      numero: numero.value,
+      nom: nom.value,
+      montant: montant.value,
+      statut: 'en attente'
+    }]);
+
+  if (error) {
+    message.innerText = "Erreur lors de la soumission";
+    message.className = "error";
+  } else {
+    message.innerText = "Demande de retrait soumise avec succès. Cette opération peut atteindre 24h à 48h, merci de patienter ❤️";
+    message.className = "message";
+
+    // Redirection après 4 secondes
+    setTimeout(() => {
+      window.location.href = "accueil.html";
+    }, 4000);
+  }
+});
+</script>
+
+</body>
+</html>

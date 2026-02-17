@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Recharge - Gainmax</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { font-family: Arial, sans-serif; background: #f2f2f2; }
+.container { max-width: 400px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 10px; }
+h2 { text-align: center; }
+label { display: block; margin-top: 15px; font-weight: bold; }
+input, select { width: 100%; padding: 10px; margin-top: 5px; }
+.ussd { margin-top: 15px; padding: 10px; background: #eee; font-weight: bold; text-align: center; }
+button { width: 100%; margin-top: 20px; padding: 12px; background: #28a745; color: white; border: none; font-size: 16px; cursor: pointer; }
+button:hover { background: #218838; }
+.message { margin-top: 15px; text-align: center; font-weight: bold; color: green; }
+.error { color: red; }
+
+/* Bouton retour */
+.btn-retour {
+  background: #6c757d;
+  margin-bottom: 15px;
+}
+.btn-retour:hover {
+  background: #5a6268;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <!-- BOUTON RETOUR -->
+  <button class="btn-retour" onclick="window.location.href='accueil.html'">← Retour</button>
+
+  <h2>Recharge</h2>
+
+  <label>Pays</label>
+  <select id="pays">
+    <option value="">-- Sélectionner --</option>
+    <option value="+226">Burkina Faso</option>
+    <option value="+225">Côte d’Ivoire</option>
+    <option value="+221">Sénégal</option>
+    <option value="+223">Mali</option>
+    <option value="+237">Cameroun</option>
+  </select>
+
+  <label>Code pays</label>
+  <input type="text" id="code_pays" readonly>
+
+  <label>Numéro Orange Money</label>
+  <input type="tel" id="numero" placeholder="Ex: 70123456">
+
+  <label>Montant</label>
+  <input type="number" id="montant" placeholder="Ex: 5000">
+
+  <div class="ussd" id="ussd">Utilisez ce code pour valider le paiement</div>
+
+  <label>Saisissez le code OTP</label>
+  <input type="text" id="otp" placeholder="Code OTP reçu">
+
+  <button id="btnValider">Valider le paiement</button>
+
+  <div class="message" id="message"></div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+// --- Connexion à Supabase ---
+const supabaseUrl = 'https://bokfeyyczhzreolydjly.supabase.co';
+const supabaseKey = 'sb_publishable_5DXFVEW-wWVm-sMaLjrSCg_9U4OR4dW';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const pays = document.getElementById("pays");
+const codePays = document.getElementById("code_pays");
+const montant = document.getElementById("montant");
+const ussd = document.getElementById("ussd");
+const btn = document.getElementById("btnValider");
+const message = document.getElementById("message");
+
+// Mettre le code pays automatiquement
+pays.addEventListener("change", () => {
+  codePays.value = pays.value;
+});
+
+// Afficher le code USSD automatiquement
+montant.addEventListener("input", () => {
+  if (montant.value) {
+    ussd.innerText = "Utilisez ce code pour valider le paiement : *144*4*6*" + montant.value + "#";
+  } else {
+    ussd.innerText = "Utilisez ce code pour valider le paiement";
+  }
+});
+
+// Bouton valider
+btn.addEventListener("click", async () => {
+  const numeroVal = document.getElementById("numero").value;
+  const otpVal = document.getElementById("otp").value;
+  const montantVal = parseInt(montant.value);
+
+  if (!pays.value || !numeroVal || !montantVal || !otpVal) {
+    message.innerHTML = "<span class='error'>Veuillez remplir tous les champs</span>";
+    return;
+  }
+
+  // --- INSÉRER DANS LA BASE recharge ---
+  const { data, error } = await supabase
+    .from('recharge')
+    .insert([{
+      user_id: null, // si tu as un utilisateur connecté, mettre son ID
+      pays: pays.options[pays.selectedIndex].text,
+      code_pays: codePays.value,
+      numero: numeroVal,
+      montant: montantVal,
+      otp: otpVal,
+      statut: 'en_attente'
+    }]);
+
+  if (error) {
+    message.innerHTML = "<span class='error'>Erreur : " + error.message + "</span>";
+    console.error(error);
+    return;
+  }
+
+  // --- MESSAGE PAIEMENT EN COURS ---
+  message.innerHTML = `
+    Votre paiement est en cours de vérification.<br>
+    Cette opération peut atteindre 10 minutes.
+  `;
+
+  // --- REDIRECTION VERS ACCUEIL ---
+  setTimeout(() => {
+    window.location.href = "accueil.html";
+  }, 3000);
+});
+</script>
+
+</body>
+</html>

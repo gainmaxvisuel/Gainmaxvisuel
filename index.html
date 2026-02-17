@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscription</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+input, select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; max-width: 400px; }
+button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
+button:hover { background-color: #0056b3; }
+</style>
+</head>
+<body>
+
+<h2>Inscription</h2>
+
+<!-- Formulaire -->
+<select id="pays">
+  <option value="">Sélectionner un pays</option>
+  <option value="Burkina Faso" data-code="+226">Burkina Faso</option>
+  <option value="Côte d'Ivoire" data-code="+225">Côte d'Ivoire</option>
+  <option value="Mali" data-code="+223">Mali</option>
+  <!-- ajoute d'autres pays avec Orange Money ici -->
+</select>
+
+<input type="text" id="codePays" placeholder="Code pays" readonly>
+<input type="text" id="numero" placeholder="Numéro">
+<input type="text" id="surnom" placeholder="Surnom">
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="motDePasse" placeholder="Mot de passe">
+
+<button id="btnInscrire">S'inscrire</button>
+
+<p>Déjà un compte ? <a href="connexion.html">Connectez-vous</a></p>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabaseUrl = 'https://bokfeyyczhzreolydjly.supabase.co'
+const supabaseKey = 'sb_publishable_5DXFVEW-wWVm-sMaLjrSCg_9U4OR4dW'
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Mise à jour automatique du code pays
+document.getElementById('pays').addEventListener('change', function() {
+  const code = this.selectedOptions[0].dataset.code || '';
+  document.getElementById('codePays').value = code;
+})
+
+// Bouton Inscrire
+document.getElementById('btnInscrire').addEventListener('click', async () => {
+  const pays = document.getElementById('pays').value
+  const codePays = document.getElementById('codePays').value
+  const numero = document.getElementById('numero').value
+  const surnom = document.getElementById('surnom').value
+  const email = document.getElementById('email').value
+  const mot_de_passe = document.getElementById('motDePasse').value
+
+  if (!pays || !numero || !surnom || !email || !mot_de_passe) {
+    alert('Veuillez remplir tous les champs')
+    return
+  }
+
+  // Insérer l'utilisateur dans Supabase
+  const { data, error } = await supabase
+    .from('users')
+    .insert([{ pays, codePays, numero, surnom, email, mot_de_passe, solde: 1000 }])
+
+  if (error) {
+    alert('Erreur : ' + error.message)
+  } else {
+    alert('Inscription réussie ! Redirection vers l’accueil...')
+    window.location.href = 'accueil.html' // redirige vers l’accueil
+  }
+})
+</script>
+</body>
+</html>
